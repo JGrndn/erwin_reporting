@@ -1,0 +1,12 @@
+{
+    "name": "erwin_ps_reporting",
+    "description": "erwin reporting for consulting team",
+    "version": "1.0.0",
+    "bin": {
+        "erwinreporting": "./index.js"
+    },
+    "dependencies": {
+        "toggl-api": "~1.0.1",
+        "json2csv": "~4.0.4"
+    }
+}
