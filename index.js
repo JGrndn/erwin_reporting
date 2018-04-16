@@ -1,52 +1,58 @@
 #!/usr/bin/env node
 /*jshint esversion: 6*/
 
-var config = {
-    apiToken: '7b0a357e6ffac7198b961aa0dbeadf92',
-    outputFile: 'C:\\Dev\\SRC\\erwin_Reporting\\report.csv',
-    ws_id: 2070626
-};
+(function () {
+    'use strict';
+    var log4js = require('log4js'),
+        argv = require('minimist')(process.argv.slice(2), {
+            string: ['activity'],
+            boolean:false,
+            alias: { a: 'activity', e: 'expense' }
+        }),
+        log, options;
 
-var togglOptions = {
-    user_agent: 'erwin Reporting - Consulting team',
-    workspace_id: config.ws_id,
-    order_field: 'date' //,
-    // since:'2018-04-01'
-};
+    log4js.configure({
+        appenders: {
+            out: { type: 'stdout' },
+            file: { type: 'file', filename: 'logs/application.log' }
+        },
+        categories: {
+            default: { appenders: ['out', 'file'], level: 'debug' }
+        }
+    });
+    log = log4js.getLogger();
 
-var csvOptions = {
-    fields: [
-        { value: 'id', label: 'TimeEntry_Id' },
-        { value: 'description', label: 'TimeEntry_Description' },
-        { value: 'start', label: 'TimeEntry_Start' },
-        { value: 'end', label: 'TimeEntry_End' },
-        { value: 'updated', label: 'TimeEntry_LastUpdate' },
-        { value: 'dur', label: 'TimeEntry_Duration' },
-        { value: 'tags', label: 'TimeEntry_Tags' },
-        { value: 'tid', label: 'Task_Id' },
-        { value: 'task', label: 'Task_Name' },
-        { value: 'pid', label: 'Project_Id' },
-        { value: 'project', label: 'Project_Name' },
-        { value: 'uid', label: 'User_Id' },
-        { value: 'user', label: 'User' },
-        { value: 'client', label: 'Client' },
-        { value: 'billable', label: 'Amount' },
-        { value: 'is_billable', label: 'Billable' }
-    ]
-};
-
-var TogglClient = require('toggl-api');
-var Json2csv = require('json2csv').Parser;
-var fs = require('fs');
-
-var toggl = new TogglClient({ apiToken: config.apiToken });
-var parser = new Json2csv(csvOptions);
-var file = fs.createWriteStream(config.outputFile);
-
-toggl.detailedReport(togglOptions, function (err, report) {
-    if (err !== null) {
-        console.error(err.message);
+    function outputUsage() {
+        var o = [];
+        o.push('** erwin Professional Services Report manager **\n');
+        o.push('Usage : \n');
+        o.push('-activity|--a\n');
+        o.push('-expense|--e\n');
+        console.info(o.join(''));
     }
-    var csv = parser.parse(report.data);
-    file.write(csv);
-});
+
+    function checkInternet(callback) {
+        require('dns').lookup('google.com', function (err) {
+            if (err && err.code == 'ENOTFOUND') {
+                log.error('Check the internet connection before launching the application.');
+            } else {
+                callback();
+            }
+        });
+    }
+
+    if (argv.activity === undefined && argv.exepense === undefined){
+        outputUsage();
+    }
+
+    if (argv.activity !== null && argv.activity !== undefined) {
+        checkInternet(function () {
+            console.log('test');
+            var all = argv.activity === 'all';
+            require('./libs/activity').getActivityData(log, all);
+        });
+    }
+    if (argv.expense !== null && argv.expense !== undefined) {
+
+    }
+}());
