@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#! /usr/bin/env node
 /*jshint esversion: 6*/
 
 (function () {
@@ -47,7 +47,6 @@
 
     if (argv.activity !== null && argv.activity !== undefined) {
         checkInternet(function () {
-            console.log('test');
             var all = argv.activity === 'all';
             require('./libs/activity').getActivityData(log, all);
         });

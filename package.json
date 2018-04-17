@@ -1,22 +1,32 @@
 {
-    "name": "epsreport",
-    "description": "erwin reporting for consulting team",
-    "version": "1.0.0",
-    "bin": {
-        "epsr": "./index.js"
-    },
-    "repository": {
-        "type": "git",
-        "url":"https://github.com/JGrndn/erwin_Reporting.git"
-    },
-    "license": "MIT",
-    "bug":{
-        "url": "https://github.com/JGrndn/erwin_Reporting/issues"
-    },
-    "dependencies": {
-        "toggl-api": "~1.0.1",
-        "json2csv": "~4.0.4",
-        "log4js": "~2.5.3",
-        "minimist": "^1.2.0"
-    }
+  "name": "erwinreport",
+  "description": "erwin reporting for consulting team",
+  "version": "1.0.1",
+  "main": "index.js",
+  "bin": {
+    "epsr": "./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JGrndn/erwin_Reporting.git"
+  },
+  "license": "MIT",
+  "bug": {
+    "url": "https://github.com/JGrndn/erwin_Reporting/issues"
+  },
+  "dependencies": {
+    "toggl-api": "~1.0.1",
+    "json2csv": "~4.0.4",
+    "log4js": "~2.5.3",
+    "minimist": "^1.2.0"
+  },
+  "bugs": {
+    "url": "https://github.com/JGrndn/erwin_Reporting/issues"
+  },
+  "homepage": "https://github.com/JGrndn/erwin_Reporting#readme",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": ""
 }
