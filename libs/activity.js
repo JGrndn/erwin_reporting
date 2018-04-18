@@ -1,27 +1,20 @@
 /*jshint esversion: 6*/
-
-
-function getActivityData(log, getAll){
-    'use strict';
-    var fs = require('fs'),
-        TogglClient = require('toggl-api'),
-        Json2csv = require('json2csv').Parser,
-        toggl, csv, output, file, csvFields;
-
-    var config = {
-            apiToken: '7b0a357e6ffac7198b961aa0dbeadf92',
-            outputFolder: './output',
-            ws_id: 2070626
-        }, togglOptions = {
-            user_agent: 'erwin Reporting - Consulting team',
-            workspace_id: config.ws_id,
-            order_field: 'date'
-        };
-
-    if (getAll){
-        togglOptions.since = '2017-01-01';
-    }
-
+var fs = require('fs'),
+    TogglClient = require('toggl-api'),
+    Json2csv = require('json2csv').Parser,
+    output, file, json = [],
+    config = {
+        apiToken: '7b0a357e6ffac7198b961aa0dbeadf92',
+        outputFolder: './output/',
+        outputFile: 'activity.csv',
+        ws_id: 2070626
+    },
+    togglOptions = {
+        user_agent: 'erwin Reporting - Consulting team',
+        workspace_id: config.ws_id,
+        order_field: 'date',
+        page: 1
+    },
     csvFields = {
         fields: [
             { value: 'id', label: 'TimeEntry_Id' },
@@ -42,37 +35,61 @@ function getActivityData(log, getAll){
             { value: 'billable', label: 'Amount' },
             { value: 'is_billable', label: 'Billable' }
         ]
-    };
+    },
+    toggl = new TogglClient({ apiToken: config.apiToken }),
+    csv = new Json2csv(csvFields),
+    log;
 
-    toggl = new TogglClient({ apiToken: config.apiToken });
-    csv = new Json2csv(csvFields);
+
+function getActivityData(_log, getAll) {
+    'use strict';
+    log = _log;
 
     log.debug('Check if output folder exists...');
     if (!fs.existsSync(config.outputFolder)) {
         log.info('Folder does not exist. Creating folder...');
         fs.mkdirSync(config.outputFolder);
     }
-
-    file = fs.createWriteStream(config.outputFolder + '/activity.csv');
+    if (getAll) {
+        togglOptions.since = '2018-01-01';
+    }
     log.info('Get data from Toggl...');
-    toggl.detailedReport(togglOptions, function (err, report) {
-        if (err !== null) {
-            log.error(err.message);
-        }
-        log.info('Data retrieved.');
-        log.debug('Get project number from name...');
-        var json, data = report.data;
-        json = data.map(function(currentValue, index, arr){
-            currentValue.pnb = currentValue.project.split(' ')[0];
-            return currentValue;
-        });
-        log.info('Parse JSON to CSV...');
+    execQuery(function(){
+        log.info('Parsing JSON to CSV...');
         var output = csv.parse(json);
-        log.info('Write CSV file...');
+        log.info('JSON parsed !');
+        file = fs.createWriteStream(config.outputFolder + config.outputFile);
+        log.info('Writing CSV file...');
         file.write(output);
-        log.info('CSV file written.');
+        log.info('CSV file written !');
     });
 }
+
+function execQuery(callback) {
+    var opt = JSON.parse(JSON.stringify(togglOptions)); // clone object as detailedReport method remove the 'page' attribute from togglOptions
+    toggl.detailedReport(opt, function (err, report) {
+        if (err !== null) {
+            log.error('Error : ' + err.message);
+            return;
+        } else {
+            log.info('Data retrieved (page ' + togglOptions.page + ')');
+            log.debug('Get project number from name and calculate duration...');
+            var data = report.data.map(function (currentValue, index, arr) {
+                currentValue.pnb = (currentValue.project) ? currentValue.project.split(' ')[0] : '';
+                currentValue.dur = currentValue.dur / (1000 * 60 * 60);
+                return currentValue;
+            });
+            json = json.concat(data);
+            if (report.total_count > report.per_page && report.data.length === report.per_page) {
+                togglOptions.page++;
+                execQuery(callback);
+            } else {
+                callback();
+            }
+        }
+    });
+}
+
 
 module.exports = {
     getActivityData
