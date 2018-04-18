@@ -1,7 +1,7 @@
 {
   "name": "erwinreport",
   "description": "erwin reporting for consulting team",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "index.js",
   "bin": {
     "epsr": "./index.js"

@@ -22,7 +22,8 @@ var fs = require('fs'),
             { value: 'start', label: 'TimeEntry_Start' },
             { value: 'end', label: 'TimeEntry_End' },
             { value: 'updated', label: 'TimeEntry_LastUpdate' },
-            { value: 'dur', label: 'TimeEntry_Duration' },
+            { value: 'dur', label: 'TimeEntry_DurationDays' },
+            { value: 'durh', label:'TimeEntry_DurationHours' },
             { value: 'tags', label: 'TimeEntry_Tags' },
             { value: 'tid', label: 'Task_Id' },
             { value: 'task', label: 'Task_Name' },
@@ -76,7 +77,8 @@ function execQuery(callback) {
             log.debug('Get project number from name and calculate duration...');
             var data = report.data.map(function (currentValue, index, arr) {
                 currentValue.pnb = (currentValue.project) ? currentValue.project.split(' ')[0] : '';
-                currentValue.dur = currentValue.dur / (1000 * 60 * 60);
+                currentValue.durh = currentValue.dur / (1000 * 60 * 60);
+                currentValue.dur = currentValue.durh / 8;
                 return currentValue;
             });
             json = json.concat(data);
