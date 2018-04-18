@@ -17,6 +17,7 @@ var fs = require('fs'),
     },
     csvFields = {
         fields: [
+            { value: 'name', label: 'TimeEntry_Name'},
             { value: 'id', label: 'TimeEntry_Id' },
             { value: 'description', label: 'TimeEntry_Description' },
             { value: 'start', label: 'TimeEntry_Start' },
@@ -76,6 +77,7 @@ function execQuery(callback) {
             log.info('Data retrieved (page ' + togglOptions.page + ')');
             log.debug('Get project number from name and calculate duration...');
             var data = report.data.map(function (currentValue, index, arr) {
+                currentValue.name = currentValue.user + '_' + currentValue.id;
                 currentValue.pnb = (currentValue.project) ? currentValue.project.split(' ')[0] : '';
                 currentValue.durh = currentValue.dur / (1000 * 60 * 60);
                 currentValue.dur = currentValue.durh / 8;
