@@ -17,15 +17,17 @@ var fs = require('fs'),
     },
     csvFields = {
         fields: [
-            { value: 'name', label: 'TimeEntry_Name'},
+            { value: 'name', label: 'TimeEntry_Name' },
             { value: 'id', label: 'TimeEntry_Id' },
             { value: 'description', label: 'TimeEntry_Description' },
             { value: 'start', label: 'TimeEntry_Start' },
             { value: 'end', label: 'TimeEntry_End' },
             { value: 'updated', label: 'TimeEntry_LastUpdate' },
             { value: 'dur', label: 'TimeEntry_DurationDays' },
-            { value: 'durh', label:'TimeEntry_DurationHours' },
+            { value: 'durh', label: 'TimeEntry_DurationHours' },
             { value: 'tags', label: 'TimeEntry_Tags' },
+            { value: 'billable', label: 'TimeEntry_Amount' },
+            { value: 'is_billable', label: 'TimeEntry_Billable' },
             { value: 'tid', label: 'Task_Id' },
             { value: 'task', label: 'Task_Name' },
             { value: 'pid', label: 'Project_Id' },
@@ -33,9 +35,8 @@ var fs = require('fs'),
             { value: 'pnb', label: 'Project_Number' },
             { value: 'uid', label: 'User_Id' },
             { value: 'user', label: 'User' },
-            { value: 'client', label: 'Client' },
-            { value: 'billable', label: 'Amount' },
-            { value: 'is_billable', label: 'Billable' }
+            { value: 'usertype', label: 'User_Type' },
+            { value: 'client', label: 'Client' }
         ]
     },
     toggl = new TogglClient({ apiToken: config.apiToken }),
@@ -56,9 +57,22 @@ function getActivityData(_log, getAll) {
         togglOptions.since = '2018-01-01';
     }
     log.info('Get data from Toggl...');
-    execQuery(function(){
+    execQuery(function () {
+        var data = json.map(function (currentValue, index, arr) {
+            currentValue.pnb = (currentValue.project) ? currentValue.project.split(' ')[0] : ''; // get project number
+            currentValue.durh = currentValue.dur / (1000 * 60 * 60); // duration in hours
+            currentValue.dur = currentValue.durh / 8; // duration in days
+            currentValue.start = currentValue.start.substr(0, 10); // get UTC date
+            currentValue.end = currentValue.end.substr(0, 10); // get UTC date
+            currentValue.updated = currentValue.updated.substr(0, 10); // get UTC date
+            currentValue.name = currentValue.user + '_' + currentValue.id;
+            currentValue.usertype = 'Social';
+            currentValue.user = currentValue.user.toUpperCase();
+            return currentValue;
+        });
+
         log.info('Parsing JSON to CSV...');
-        var output = csv.parse(json);
+        var output = csv.parse(data);
         log.info('JSON parsed !');
         file = fs.createWriteStream(config.outputFolder + config.outputFile);
         log.info('Writing CSV file...');
@@ -76,14 +90,7 @@ function execQuery(callback) {
         } else {
             log.info('Data retrieved (page ' + togglOptions.page + ')');
             log.debug('Get project number from name and calculate duration...');
-            var data = report.data.map(function (currentValue, index, arr) {
-                currentValue.name = currentValue.user + '_' + currentValue.id;
-                currentValue.pnb = (currentValue.project) ? currentValue.project.split(' ')[0] : '';
-                currentValue.durh = currentValue.dur / (1000 * 60 * 60);
-                currentValue.dur = currentValue.durh / 8;
-                return currentValue;
-            });
-            json = json.concat(data);
+            json = json.concat(report.data);
             if (report.total_count > report.per_page && report.data.length === report.per_page) {
                 togglOptions.page++;
                 execQuery(callback);
