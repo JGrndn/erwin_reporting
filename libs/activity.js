@@ -155,7 +155,7 @@ function getProjects(callback){
                 ]
             };
             var data = json.map(function (currentValue, index, arr) {
-                currentValue.pnb = (currentValue.project) ? currentValue.name.split(' ')[0] : ''; // get project number
+                currentValue.pnb = currentValue.name.split(' ')[0]; // get project number
                 return currentValue;
             });
             writeToFile('projects.csv', csvOpt, data);
