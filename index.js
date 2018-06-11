@@ -48,7 +48,7 @@
     if (argv.activity !== null && argv.activity !== undefined) {
         checkInternet(function () {
             var all = (typeof(argv.activity) === 'string' && argv.activity.trim() === 'all') ? true : false;
-            require('./libs/activity').getActivityData(log, all);
+            require('./libs/activity').getReportData(log, all);
         });
     }
     if (argv.expense !== null && argv.expense !== undefined) {
