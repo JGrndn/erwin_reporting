@@ -92,13 +92,19 @@ function getDetailedReport(callback) {
     });
 }
 
+function getBeginningOfYear(){
+    var d = new Date();
+    return d.getFullYear()+'-01-01';
+}
+
 function getTimeEntries(sinceBeginningOfYear) {
     if (sinceBeginningOfYear) {
-        togglOptions.since = '2018-01-01';
+        togglOptions.since = getBeginningOfYear();
     }
     getDetailedReport(function () {
         var data = json.map(function (currentValue, index, arr) {
             currentValue.pnb = (currentValue.project) ? currentValue.project.split(' ')[0] : ''; // get project number
+            currentValue.project = currentValue.project.substring(currentValue.pnb.length).trim();
             currentValue.durh = currentValue.dur / (1000 * 60 * 60); // duration in hours
             currentValue.dur = currentValue.durh / 8; // duration in days
             currentValue.start = currentValue.start.substr(0, 10); // get UTC date
@@ -156,7 +162,7 @@ function getProjects(callback){
             };
             var data = json.map(function (currentValue, index, arr) {
                 currentValue.pnb = currentValue.name.split(' ')[0]; // get project number
-                currentValue.name = currentValue.name.split(' ').length > 1 ? currentValue.name.split(' ')[1] : currentValue.name;
+                currentValue.name = currentValue.name.substring(currentValue.pnb.length).trim();
                 return currentValue;
             });
             writeToFile('projects.csv', csvOpt, data);
