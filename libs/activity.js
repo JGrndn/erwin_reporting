@@ -107,9 +107,9 @@ function getTimeEntries(sinceBeginningOfYear) {
             currentValue.project = currentValue.project ? currentValue.project.substring(currentValue.pnb.length).trim() : '';
             currentValue.durh = currentValue.dur / (1000 * 60 * 60); // duration in hours
             currentValue.dur = currentValue.durh / 8; // duration in days
-            currentValue.start = currentValue.start.substr(0, 10); // get UTC date
-            currentValue.end = currentValue.end.substr(0, 10); // get UTC date
-            currentValue.updated = currentValue.updated.substr(0, 10); // get UTC date
+            currentValue.start = currentValue.start.substr(0, 10) + ' ' + currentValue.start.substr(11,8); // get UTC date
+            currentValue.end = currentValue.end.substr(0, 10) + ' ' + currentValue.end.substr(11, 8); // get UTC date
+            currentValue.updated = currentValue.updated.substr(0, 10) + ' ' + currentValue.updated.substr(11, 8); // get UTC date
             currentValue.name = currentValue.user + '_' + currentValue.id;
             currentValue.usertype = 'Social';
             currentValue.user = currentValue.user.toUpperCase();
