@@ -133,9 +133,16 @@ function getTasks(callback){
                 fields:[
                     { value : 'id', label: 'Task_Id' },
                     { value: 'name', label: 'Task_Name'},
-                    { value: 'pid', label: 'Project_Id'}
+                    { value: 'pid', label: 'Project_Id'},
+                    { value: 'duration', label: 'Task_Duration'},
+                    { value: 'duration_hours', label: 'Task_Duration_Hours'}
                 ]
             };
+            var data = json.map(function (currentValue, index, arr) {
+                currentValue.duration_hours = currentValue.estimated_seconds / (60 * 60); // duration in hours
+                currentValue.duration = currentValue.duration_hours / 8; // duration in days
+                return currentValue;
+            });
             writeToFile('tasks.csv', csvOpt, json);
             if (callback) {
                 return callback();
@@ -157,12 +164,16 @@ function getProjects(callback){
                     { value: 'id', label: 'Project_Id' },
                     { value: 'name', label: 'Project_Name' },
                     { value: 'pnb', label: 'Project_Number' },
-                    { value: 'cid', label: 'Client_Id' }
+                    { value: 'cid', label: 'Client_Id' },
+                    { value: 'estimated_hours', label: 'Project_Duration_Hours'},
+                    { value: 'estimated_days', label: 'Project_Duration'}
                 ]
             };
             var data = json.map(function (currentValue, index, arr) {
                 currentValue.pnb = currentValue.name.split(' ')[0]; // get project number
                 currentValue.name = currentValue.name ? currentValue.name.substring(currentValue.pnb.length).trim() : '';
+                currentValue.estimated_hours = currentValue.estimated_hours ? currentValue.estimated_hours : 0;
+                currentValue.estimated_days = currentValue.estimated_hours ? currentValue.estimated_hours / 8 : 0;
                 return currentValue;
             });
             writeToFile('projects.csv', csvOpt, data);

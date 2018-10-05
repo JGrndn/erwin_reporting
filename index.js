@@ -27,7 +27,6 @@
         o.push('** erwin Professional Services Report manager **\n');
         o.push('Usage : \n');
         o.push('--activity|-a [all]\t\tGet activity report data\n');
-        //o.push('-expense|--e\t\tGet expenses report data\n');
         console.info(o.join(''));
     }
 
