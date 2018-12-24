@@ -97,9 +97,15 @@ function getBeginningOfYear(){
     return d.getFullYear()+'-01-01';
 }
 
+function getEndOfYear(){
+    var d = new Date();
+    return d.getFullYear()+'-12-31';
+}
+
 function getTimeEntries(sinceBeginningOfYear) {
     if (sinceBeginningOfYear) {
         togglOptions.since = getBeginningOfYear();
+        togglOptions.until = getEndOfYear();
     }
     getDetailedReport(function () {
         var data = json.map(function (currentValue, index, arr) {
