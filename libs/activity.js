@@ -110,6 +110,7 @@ function getTimeEntries(sinceBeginningOfYear) {
             currentValue.start = currentValue.start.substr(0, 10) + ' ' + currentValue.start.substr(11,8); // get UTC date
             currentValue.end = currentValue.end.substr(0, 10) + ' ' + currentValue.end.substr(11, 8); // get UTC date
             currentValue.updated = currentValue.updated.substr(0, 10) + ' ' + currentValue.updated.substr(11, 8); // get UTC date
+            currentValue.user = currentValue.user.trim();
             currentValue.name = currentValue.user + '_' + currentValue.id;
             currentValue.usertype = 'Social';
             currentValue.user = currentValue.user.toUpperCase();
