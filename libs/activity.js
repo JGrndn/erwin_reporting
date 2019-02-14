@@ -28,6 +28,7 @@ var fs = require('fs'),
             { value: 'tags', label: 'TimeEntry_Tags' },
             { value: 'billable', label: 'TimeEntry_Amount' },
             { value: 'is_billable', label: 'TimeEntry_Billable' },
+            { value: 'isFromToggl', label: 'TimeEntry_IsFromToggl'},
             { value: 'tid', label: 'Task_Id' },
             { value: 'task', label: 'Task_Name' },
             { value: 'pid', label: 'Project_Id' },
@@ -109,6 +110,7 @@ function getTimeEntries(sinceBeginningOfYear) {
     }
     getDetailedReport(function () {
         var data = json.map(function (currentValue, index, arr) {
+            currentValue.isFromToggl = true,
             currentValue.pnb = (currentValue.project) ? currentValue.project.split(' ')[0] : ''; // get project number
             currentValue.project = currentValue.project ? currentValue.project.substring(currentValue.pnb.length).trim() : '';
             currentValue.durh = currentValue.dur / (1000 * 60 * 60); // duration in hours
