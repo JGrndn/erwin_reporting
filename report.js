@@ -1,68 +1,69 @@
 (function () {
   'use strict';
 
-  var config = {
-    outputFolder: './output/',
-    ws_id: 2070626
-  };
-  var https = require('https');
-  var log4js = require('log4js');
-  log4js.configure({
-    appenders: {
-        out: { type: 'stdout' },
-        file: { type: 'file', filename: 'logs/application.log', keepFileExt: true }
+  var wId = 2070626;
+  var outputFolder = './output/';
+
+
+  var argv = require('minimist')(process.argv.slice(2), {
+    string: [ 'user', 'output' ],
+    boolean: [ 'version', 'help' ],
+    alias: { h:'help', v:'version', u:'user', o:'output' },
+    default: {output: outputFolder},
+    '--': true,
+  });
+
+  function outputUsage() {
+    var o = [];
+    o.push('** erwin Professional Services Report manager **');
+    o.push('Usage : ');
+    o.push('--user|-u TOKEN \t\tMandatory. Set the user token used to retrieve data.');
+    o.push('--output|-o PATH\t\tOptional. Set the path of the files which will be generated. Default value is "' + outputFolder + '"');
+    o.push('--help|-h       \t\tOptional. Display usage.');
+    o.push('--version|v     \t\tOptional. Display the version number.');
+    console.info(o.join('\n'));
+  }
+
+  if (argv.h){
+    outputUsage();
+    return;
+  }
+
+  if (argv.v){
+    var pjson = require('./package.json');
+    console.info(pjson.version);
+    return;
+  }
+
+  if (!argv.u){
+    outputUsage();
+    return;
+  }  
+
+  var opts = {
+    auth: {
+      user: argv.u,
+      pass: 'api_token'
     },
-    categories: {
-        default: { appenders: ['out', 'file'], level: 'debug' }
-    }
-  });
-  var log = log4js.getLogger();
+    headers : {
+      'Content-Type': 'application/json'
+    },
+    json: true
+  };
 
-  function getTogglOptions(obj){
-    var opts = {
-      json : true,
-      auth : '7b0a357e6ffac7198b961aa0dbeadf92:api_token',
-      headers : {
-        'Content-Type': 'application/json'
-      }
-    };
-    for(var p in obj){
-      if (obj.hasOwnProperty(p)){
-        opts[p] = obj[p];
-      }
-    }
-    return opts;
-  }
+  outputFolder = (argv.o) ? argv.o : outputFolder;
 
-  function receiveData(response, callback){
-    if (response.statusCode !== 200){
-      log.error('ko');
-    } else {
-      let data = '';
-      response.setEncoding('utf8');
-      response.on('data', (chunk) => {
-        data += chunk;
-      });
-      response.on('end', () => {
-        callback(JSON.parse(data));
-      });
-    }
-  }
 
-  function getProjects(callback){
-    var url = 'https://www.toggl.com/api/v8/workspaces/'+config.ws_id+'/projects?active=both';
-    var opts = getTogglOptions({active:'both'});
-    https.get(url, opts, (res) => {
-      receiveData(res, callback);
+  var rp = require('request-promise-native');
+  var url = 'https://www.toggl.com/api/v8';
+
+  rp.get(url + '/workspaces/'+ wId + '/projects?active=both', opts)
+    .then(function(data){
+      console.log(data);
+    })
+    .catch(function(err){
+      console.error(err);
     });
-  }
-
-
-  var projects, tasks, timeentries, users;
-  getProjects(function(data){
-    projects = data;
-    // get tasks and users
-  });
 
 
 }());
