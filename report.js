@@ -54,36 +54,36 @@
   outputFolder = (argv.o) ? argv.o : outputFolder;
 
 
-  var rp = require('request-promise-native');
+  var rp = require('request-promise');
   var url = 'https://www.toggl.com/api/v8';
 
 
   const wait = () => new Promise(resolve => setTimeout(resolve, 1000)); // toggl api limitation is set to 1 request / second
 
-  function getAllTasks(projects){
-    let chain = Promise.resolve();
-    projects.forEach( (p, i) => {
-      if (i <3){
-      chain = chain.then(() => rp.get(url + '/projects/' + p.id + '/tasks', opts).then(data => {
-        console.log(data);
+  function getProjectUsers(projects){
+    //projects = projects.filter((v,i)=> i<3);
+    var userIdsByProjectId = {};
+    var promises = projects.reduce((chain, p) =>
+      chain
+      .then(() => rp.get(url + '/projects/' + p.id + '/project_users', opts).then(data => {
+        if (Array.isArray(data)) userIdsByProjectId[p.id] = data.map(u=> u.uid)
       }))
-      .catch(function(err){
-        console.log(err);
-      })
-      .then(wait);
-      }
-    });
-    return chain;
+    , Promise.resolve());
+    return promises.then(() => userIdsByProjectId);
   }
 
   rp.get(url + '/workspaces/'+ wId + '/projects?active=both', opts)
-    .then(projects => getAllTasks(projects))
-    .then(data => {
-      console.log('hello');
-    })
-    .catch(function(err){
-      console.error(err);
-    });
+  .then(projects => getProjectUsers(projects))
+  .then(userIdsByProjectId => {
+    console.log('hello');
+  })
+  .catch(function(err){
+    console.error(err);
+  });
 
+  // promise to get projects & users
+  // promise to get tasks
+  // promise to get timeentries
+  // promise to get clients
 
 }());
