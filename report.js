@@ -57,9 +57,29 @@
   var rp = require('request-promise-native');
   var url = 'https://www.toggl.com/api/v8';
 
+
+  const wait = () => new Promise(resolve => setTimeout(resolve, 1000)); // toggl api limitation is set to 1 request / second
+
+  function getAllTasks(projects){
+    let chain = Promise.resolve();
+    projects.forEach( (p, i) => {
+      if (i <3){
+      chain = chain.then(() => rp.get(url + '/projects/' + p.id + '/tasks', opts).then(data => {
+        console.log(data);
+      }))
+      .catch(function(err){
+        console.log(err);
+      })
+      .then(wait);
+      }
+    });
+    return chain;
+  }
+
   rp.get(url + '/workspaces/'+ wId + '/projects?active=both', opts)
-    .then(function(data){
-      console.log(data);
+    .then(projects => getAllTasks(projects))
+    .then(data => {
+      console.log('hello');
     })
     .catch(function(err){
       console.error(err);

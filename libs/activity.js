@@ -56,21 +56,28 @@ function getReportData(_log, getAll){
     getClients(function(){
         getProjects(function(){
             getTasks(function(){
-                getTimeEntries(getAll);
+                getTimeEntries(true);
             });
         });
     });
 }
+
+var outputData = {};
 
 function writeToFile(fileName, csvOpt, json){
     var csv = new Json2csv(csvOpt);
     log.info('Parsing JSON to CSV...');
     var output = csv.parse(json);
     log.info('JSON parsed !');
-    file = fs.createWriteStream(config.outputFolder + fileName);
+    file = fs.createWriteStream(config.outputFolder + fileName + '.csv');
     log.info('Writing CSV file...');
     file.write(output);
     log.info('CSV file written !');
+
+    outputData[fileName] = json;
+    if (fileName == 'timeentries'){
+        compareData(outputData);
+    }
 }
 
 function getDetailedReport(callback) {
@@ -125,7 +132,7 @@ function getTimeEntries(sinceBeginningOfYear) {
             return currentValue;
         });
 
-        writeToFile('timeentries.csv', csvFields, data);
+        writeToFile('timeentries', csvFields, data);
         log.info('End of retrieving Toggl data !');
     });
 }
@@ -152,7 +159,7 @@ function getTasks(callback){
                 currentValue.duration = currentValue.duration_hours / 8; // duration in days
                 return currentValue;
             });
-            writeToFile('tasks.csv', csvOpt, json);
+            writeToFile('tasks', csvOpt, json);
             if (callback) {
                 return callback();
             }
@@ -185,7 +192,7 @@ function getProjects(callback){
                 currentValue.estimated_days = currentValue.estimated_hours ? currentValue.estimated_hours / 8 : 0;
                 return currentValue;
             });
-            writeToFile('projects.csv', csvOpt, data);
+            writeToFile('projects', csvOpt, data);
             if (callback){
                 return callback();
             }
@@ -214,13 +221,27 @@ function getClients(callback){
                 currentValue.name = currentValue.name.substring(currentValue.name.indexOf(' ')+1);
                 return currentValue;
             });
-            writeToFile('clients.csv', csvOpt, data);
+            writeToFile('clients', csvOpt, data);
             if (callback){
                 return callback();
             }
         }
     });
 }
+
+
+
+
+function compareData(json){
+    // savoir s'il y a des items dans json.timeentries qui ont un tid qui n'est pas dans json.tasks
+    console.log('hello');
+
+    var teTid = json.timeentries.filter(te => te.tid).map(te => te.tid);
+    var tId = json.tasks.map(t => t.id);
+
+    var notFound = [...new Set(teTid.filter(t=> tId.indexOf(t) === -1))];
+}
+
 
 module.exports = {
     getReportData : getReportData
