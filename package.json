@@ -15,14 +15,10 @@
     "url": "https://github.com/JGrndn/erwin_Reporting/issues"
   },
   "dependencies": {
-    "dns": "^0.2.2",
     "json2csv": "^4.3.5",
-    "log4js": "^2.11.0",
+    "log4js": "^4.0.2",
     "minimist": "^1.2.0",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.4",
-    "request-promise-native": "^1.0.7",
-    "toggl-api": "^1.0.1"
+    "request-promise-native": "^1.0.7"
   },
   "bugs": {
     "url": "https://github.com/JGrndn/erwin_Reporting/issues"
