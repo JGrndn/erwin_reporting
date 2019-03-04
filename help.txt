@@ -1,0 +1,59 @@
+{
+  clients : [],
+  projects : [],
+  users : [],
+  tasks : [],
+  timeentries : [],
+  userIdsByProjectId : {
+    pId : []
+  }
+}
+
+CLIENTS
+id:43741563
+name:"CUST72969 EON UK"
+code:"CUST72969"
+
+USERS
+email:"c.salaris@yahoo.it"
+fullname:"Rawda Selim"
+id:4522926
+
+PROJECTS
+active:true
+billable:true
+id:147870118
+name:"DG Sync"
+cid:42952270
+pcode:"P32"
+estimated_hours:8
+estimated_days:1
+userIds:[]
+
+TASKS
+active:true
+estimated_seconds:172800
+id:17282766
+name:"Training"
+pid:83402970
+duration_hours:8
+duration:1
+
+TIMEENTRIES
+id:1120624651
+description:"Protective Life - CATfX Automation (Analysis)"
+dur:5100000
+start:"2019-02-26T09:35:51+00:00"
+end:"2019-03-04T05:25:19+00:00"
+is_billable:true
+tags:[]
+tid:21612480
+uid:4362831
+updated:"2019-02-26T13:15:00+00:00"
+isFromToggl:true
+pcode:"P42"
+project:"DG Sync"
+durh: 8
+dur: 1
+usertype:"Social"
+user
