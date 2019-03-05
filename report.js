@@ -141,7 +141,7 @@
       timeEntries : json.timeEntries.map(o => {
         o.isFromToggl = true,
         o.pcode = (o.project) ? o.project.split(' ')[0] : ''; // get project number
-        o.project = o.project ? o.project.substring(o.pnb.length).trim() : '';
+        o.project = o.project ? o.project.substring(o.pcode.length).trim() : '';
         o.durh = o.dur / (1000 * 60 * 60); // duration in hours
         o.dur = o.durh / 8; // duration in days
         o.start = o.start.substr(0, 10) + ' ' + o.start.substr(11,8); // get UTC date
@@ -156,17 +156,80 @@
     }
     return output;
   }
-  
+
+  const json2csv = require('json2csv').parse;
+  function createCsv(json, options){
+    return new Promise(resolve => {
+      let csv = json2csv(json, options);
+      resolve(csv);
+    });
+  }
+
   function exportData(json){
     const fs = require('fs');
-    const Json2csvTransform = require('json2csv').Transform;
+    const writeToOutput = function(data, output){
+      fs.createWriteStream(output).write(data);
+    };
     // export clients
     log.info('Set output folder : ' + argv.output);
-    const fields = [
+    let fields = [
       { value: 'id', label: 'Client_Id' },
       { value: 'name', label: 'Client_Name' },
       { value: 'code', label: 'Client_Code' }
+    ];
+    createCsv(json.clients, {fields}).then(csv => writeToOutput(csv, argv.output + '/clients.csv'));
+    fields = [
+      { value: 'id', label: 'Project_Id' },
+      { value: 'name', label: 'Project_Name' },
+      { value: 'pcode', label: 'Project_Number' },
+      { value: 'cid', label: 'Client_Id' },
+      { value: 'estimated_hours', label: 'Project_Duration_Hours' },
+      { value: 'estimated_days', label: 'Project_Duration' },
+      { value: 'billable', label:'Project_Billable' },
+      { value: 'active', label:'Project_Active' },
+      { value: 'userIds', label:'Project_Users' }
     ]
+    createCsv(json.projects, {fields, unwind: 'userIds'}).then(csv => writeToOutput(csv, argv.output + '/projects.csv'));
+    fields = [
+      { value: 'id', label: 'Task_Id' },
+      { value: 'name', label: 'Task_Name' },
+      { value: 'pid', label: 'Project_Id' },
+      { value: 'active', label:'Task_Active' },
+      { value: 'estimated_seconds', label:'Task_Duration_Seconds' },
+      { value:'duration_hours', label:'Task_Duration_Hours'},
+      { value:'duration', label:'Task_Duration'}
+    ];
+    createCsv(json.tasks, {fields}).then(csv => writeToOutput(csv, argv.output + '/tasks.csv'));
+    fields = [
+      { value: 'name', label: 'TimeEntry_Name' },
+      { value: 'id', label: 'TimeEntry_Id' },
+      { value: 'description', label: 'TimeEntry_Description' },
+      { value: 'start', label: 'TimeEntry_Start' },
+      { value: 'end', label: 'TimeEntry_End' },
+      { value: 'updated', label: 'TimeEntry_LastUpdate' },
+      { value: 'dur', label: 'TimeEntry_DurationDays' },
+      { value: 'durh', label: 'TimeEntry_DurationHours' },
+      { value: 'tags', label: 'TimeEntry_Tags' },
+      { value: 'billable', label: 'TimeEntry_Amount' },
+      { value: 'is_billable', label: 'TimeEntry_Billable' },
+      { value: 'isFromToggl', label: 'TimeEntry_IsFromToggl'},
+      { value: 'tid', label: 'Task_Id' },
+      { value: 'task', label: 'Task_Name' },
+      { value: 'pid', label: 'Project_Id' },
+      { value: 'project', label: 'Project_Name' },
+      { value: 'pcode', label: 'Project_Number' },
+      { value: 'uid', label: 'User_Id' },
+      { value: 'user', label: 'User' },
+      { value: 'usertype', label: 'User_Type' },
+      { value: 'client', label: 'Client' }
+    ];
+    createCsv(json.timeEntries, {fields}).then(csv => writeToOutput(csv, argv.output + '/timeentries.csv'));
+    fields = [
+      { value: 'id', label: 'User_Id' },
+      { value: 'email', label: 'User_Email' },
+      { value: 'fullname', label: 'User_Name' }
+    ];
+    createCsv(json.users, {fields}).then(csv => writeToOutput(csv, argv.output + '/users.csv'));
   }
 
   var returnCode = 0;
@@ -184,15 +247,10 @@
       tasks : res[3] 
     };
   })
-  .then(json => {
-//    json.projects = json.projects.filter((v, i) => i<3);
-    return getProjectUsers(json);
-  })
+  .then(json => getProjectUsers(json))
   .then(json => getDetailedReport(json))
   .then(json => transformData(json))
-  .then(json => {
-    log.info('write to csv');
-  })
+  .then(json => exportData(json))
   .catch(err => {
     if (err.statusCode === 429){
       returnCode = 1;
