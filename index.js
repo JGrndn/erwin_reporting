@@ -8,14 +8,15 @@
   var initParam = {
     output : './output/',
     logs : './logs/application.log',
-    verbose : 'debug'
+    verbose : 'debug',
+    time : '20'
   }
   
 
   const argv = require('minimist')(process.argv.slice(2), {
-    string: [ 'user', 'output', 'logs', 'verbose' ],
+    string: [ 'user', 'output', 'logs', 'verbose', 'time' ],
     boolean: [ 'version', 'help' ],
-    alias: { h:'help', V:'version', u:'user', o:'output', L:'logs', v:'verbose' },
+    alias: { h:'help', V:'version', u:'user', o:'output', L:'logs', v:'verbose', t:'time' },
     default: initParam,
     '--': true,
   });
@@ -27,6 +28,7 @@
     o.push('--user|-u TOKEN   \t\tMandatory. Set the user token used to retrieve data.');
     o.push('--output|-o PATH  \t\tOptional. Set the path of the files which will be generated. Default value is "' + initParam.output + '"');
     o.push('--logs|-L PATH    \t\tOptional. Set the path of the logs files which will be generated. Default value is "' + initParam.logs + '"');
+    o.push('--time|-t VALUE   \t\tOptional. Set the waiting time between each request. Default value is ' + initParam.time + ' ms');
     o.push('--verbose|v LEVEL \t\tOptional. Set the level for logs [debug, info, warn, error, fatal]. Default value is"' + initParam.verbose + '"');
     o.push('--version|V       \t\tOptional. Display the version number.');
     console.info(o.join('\n'));
@@ -67,12 +69,14 @@
   const log = log4js.getLogger();
 
   const rp = require('request-promise-native');
-  var wait = () => new Promise(resolve => setTimeout(resolve, 10)); // toggl api limitation is set to 1 request per second
+  const waitingTime = parseInt(argv.time) === NaN ? 20 : parseInt(argv.time);
+  const wait = () => new Promise(resolve => setTimeout(resolve, waitingTime)); // toggl api limitation is set to 1 request per second
 
   function getProjectUsers(json){
     log.info('Get users for all projects');
     let userIdsByProjectId = {};
-    let promises = json.projects.reduce((chain, p) => chain
+    let promises = json.projects.reduce((chain, p) => 
+      chain
       .then(() => {
         log.debug('Get users for project <' + p.name + '> (' + p.id + ')');
         return rp.get(url + '/projects/' + p.id + '/project_users', opts).then(data => {
@@ -93,8 +97,8 @@
       workspace_id: wId,
       order_field: 'date',
       page: (pageNb) ? pageNb : 1,
-      since : year+'-01-01',
-      until : year+'-12-31',
+      since : year + '-01-01',
+      until : year + '-12-31',
     }
     let options = Object.assign({}, opts);
     options = Object.assign(options, {qs : qs});
@@ -253,9 +257,9 @@
   .then(json => exportData(json))
   .catch(err => {
     if (err.statusCode === 429){
-      returnCode = 1;
       log.fatal('Too many requests at a time. Please add delay between each request.');
     }
+    returnCode = 1;
   });
 
   return returnCode;
