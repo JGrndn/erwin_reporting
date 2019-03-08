@@ -251,6 +251,7 @@
     rp.get(url + '/workspaces/' + wId + '/tasks', opts), // get workspace tasks
   ])
   .then(res => {
+    log.info('Data retrieved for [clients, users, projects, tasks]');
     return {
       clients : res[0],
       users : res[1],
