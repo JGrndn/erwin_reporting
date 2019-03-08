@@ -122,13 +122,20 @@
 
   function transformData(json){
     log.info('Transform data');
+    // for some reason some users associated to a project do not exist in the workspace
+    Object.keys(json.usersByProject).map(p => {
+      json.usersByProject[p] = json.usersByProject[p].filter(uid => json.users.find(x => x.id === uid));
+    });
     let output = {
       clients : json.clients.map(o => {
         o.code = o.name.substring(0, o.name.indexOf(' '));
         o.name = o.name.substring(o.name.indexOf(' ') + 1);
         return o;
       }),
-      users : json.users,
+      users : json.users.map(o => {
+        o.fullname = o.fullname.toUpperCase().trim();
+        return o;
+      }),
       projects : json.projects.map(o => {
         o.pcode = o.name.split(' ')[0]; // get project number
         o.name = o.name ? o.name.substring(o.pcode.length).trim() : '';
@@ -258,6 +265,8 @@
   .catch(err => {
     if (err.statusCode === 429){
       log.fatal('Too many requests at a time. Please add delay between each request.');
+    } else {
+      log.fatal(err);
     }
     returnCode = 1;
   });
